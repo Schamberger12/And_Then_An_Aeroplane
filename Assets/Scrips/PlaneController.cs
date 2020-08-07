@@ -50,7 +50,9 @@ public class PlaneController : MonoBehaviour
         rb.rotation *= plusRot;
         Vector3 plusPos = Vector3.forward;
         plusPos = rb.rotation * plusPos;
-        rb.velocity = plusPos * (Time.fixedDeltaTime * currSpeed); 
+        rb.AddForce(plusPos * currSpeed);
+        //rb.velocity = plusPos * currSpeed; 
+        //rb.velocity = plusPos * (Time.fixedDeltaTime * currSpeed); 
         
     }
 }
