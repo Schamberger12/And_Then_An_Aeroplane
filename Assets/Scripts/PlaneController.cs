@@ -35,12 +35,15 @@ public class PlaneController : MonoBehaviour
     private float currYaw = 0f; 
     private float yawVal = 0f;
     private float thrustVal = 0f;
+    private float accelVal = 0f; 
     // Rolling over time
     public float moveTime = 0.3f; 
     public float rollTime = 0f;
     public float pitchTime = 0f;
     public float yawTime = 0f;
 
+
+    private bool isAccelerating = false; 
     
 
 
@@ -51,8 +54,13 @@ public class PlaneController : MonoBehaviour
         rb = GetComponent<Rigidbody>(); 
     }
 
+    public bool CheckAcceleration()
+    {
+        return isAccelerating;
+    }
+
     // Input sends direction plane needs to move in
-    void MovePlane(string dir)
+    public void MovePlane(string dir)
     {
         // Roll left is positive, right is negative
         if (dir == "r_left")
@@ -91,6 +99,18 @@ public class PlaneController : MonoBehaviour
             yawTime += Time.fixedDeltaTime;
         }
         else { yawVal = 0f; yawTime = 0f; }
+        if (dir == "thrust")
+        {
+            accelVal = 1f; 
+        }
+        else if(dir == "stop")
+        {
+            accelVal = -1f; 
+        }
+        else
+        {
+            accelVal = 0f; 
+        }
     }
 
     void GetInput()
@@ -105,11 +125,11 @@ public class PlaneController : MonoBehaviour
         {
             dir = "r_right";
         }
-        if (Input.GetKey(KeyCode.W))
+        if (Input.GetKey(KeyCode.S))
         {
             dir = "down";
         }
-        if (Input.GetKey(KeyCode.S))
+        if (Input.GetKey(KeyCode.W))
         {
             dir = "up"; 
         }
@@ -141,15 +161,24 @@ public class PlaneController : MonoBehaviour
             roll = Input.GetAxis("Roll") * (Time.fixedDeltaTime * rotSpeed);
             pitch = Input.GetAxis("Pitch") * (Time.fixedDeltaTime * rotSpeed);
             yaw = Input.GetAxis("Yaw") * (Time.fixedDeltaTime * rotSpeed);
+            currSpeed = Input.GetAxis("Accelerate") * (Time.fixedDeltaTime*accel); 
         }
         else
         {
             roll = rollVal * (Time.fixedDeltaTime * rotSpeed);
             pitch = pitchVal * (Time.fixedDeltaTime * rotSpeed);
             yaw = yawVal * (Time.fixedDeltaTime * rotSpeed);
+            currSpeed = accelVal * (Time.fixedDeltaTime * accel);
         }
 
-        currSpeed = Input.GetAxis("Accelerate") * (Time.fixedDeltaTime * accel);
+        if (currSpeed > 0f)
+        {
+            isAccelerating = true; 
+        }
+        else
+        {
+            isAccelerating = false; 
+        }
         if (currSpeed > maxSpeed)
         {
             currSpeed = maxSpeed;
@@ -164,8 +193,6 @@ public class PlaneController : MonoBehaviour
         Vector3 plusPos = Vector3.forward;
         plusPos = rb.rotation * plusPos;
         rb.AddForce(plusPos * currSpeed);
-        //rb.velocity = plusPos * currSpeed; 
-        //rb.velocity = plusPos * (Time.fixedDeltaTime * currSpeed); 
         
     }
 }

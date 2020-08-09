@@ -16,6 +16,14 @@ public class AiController : MonoBehaviour
 
     private bool isChecking = false;
     private bool isAvoiding = false;
+    private bool isMovingToFollow = false;
+    private bool isFollowing = false;
+
+    [SerializeField]
+    private float moveSpeed = 140f; 
+
+    [SerializeField]
+    private PlaneController planeScript; 
 
     [SerializeField]
     private Transform followPoint;
@@ -49,13 +57,45 @@ public class AiController : MonoBehaviour
         mask = LayerMask.GetMask("Obstacles");
     }
 
+    void LevelRotation()
+    {
+        if (this.transform.rotation.x > 0.5f)
+        {
+            planeScript.MovePlane("up");
+        }
+        if(this.transform.rotation.z > 0.5f)
+        {
+            planeScript.MovePlane("r_left"); 
+        }
+
+    }
+
+    void MoveToFollow()
+    {
+        float step = moveSpeed * Time.fixedDeltaTime;
+        transform.position = Vector3.MoveTowards(transform.position, followPoint.transform.position, step);
+    }
+
+    void MoveToAvoid()
+    {
+        planeScript.MovePlane("up"); 
+    }
+
 
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        float distance = Vector3.Distance(this.transform.position, followPoint.position); 
-        if (isAvoiding)
+        if (planeScript.CheckAcceleration())
+        {
+            planeScript.MovePlane("thrust");
+        }
+        float distance = Vector3.Distance(this.transform.position, followPoint.position);
+        if (distance > 15f && !isAvoiding)
+        {
+            MoveToFollow();
+        }
+        if (isChecking)
         {
             // Check if we're running into collider
             
@@ -64,11 +104,12 @@ public class AiController : MonoBehaviour
             {
                 if (Physics.Raycast(point.transform.position, point.transform.forward, out hit, 8f, mask))
                 {
-
+                    isAvoiding = true; 
+                    MoveToAvoid(); 
                 }
             }
             
         }
-        if (distance > )
+
     }
 }
